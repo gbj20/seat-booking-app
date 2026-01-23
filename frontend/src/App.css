@@ -1,38 +1,511 @@
-.App {
+/* ==================== GLOBAL STYLES ==================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #f3f4f6;
+}
+
+/* ==================== APP CONTAINER ==================== */
+.app-container {
+  padding: 20px;
+  min-height: 100vh;
+}
+
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: white;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* ==================== HEADER ==================== */
+.app-title {
+  text-align: center;
+  font-size: 32px;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 10px;
+}
+
+.user-info {
+  color: #6b7280;
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.user-id-badge {
+  background-color: #e5e7eb;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-family: monospace;
+}
+
+/* ==================== NOTIFICATIONS ==================== */
+.notification {
+  padding: 15px 20px;
+  margin-bottom: 25px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 500;
+  border: 2px solid;
+}
+
+.notification-success {
+  background-color: #d1fae5;
+  border-color: #10b981;
+  color: #065f46;
+}
+
+.notification-error {
+  background-color: #fee2e2;
+  border-color: #ef4444;
+  color: #991b1b;
+}
+
+.notification-warning {
+  background-color: #fef3c7;
+  border-color: #f59e0b;
+  color: #92400e;
+}
+
+.notification-info {
+  background-color: #dbeafe;
+  border-color: #3b82f6;
+  color: #1e40af;
+}
+
+/* ==================== SHOW SELECTION ==================== */
+.show-selection {
+  margin-bottom: 30px;
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.section-title {
+  color: #374151;
+  margin-bottom: 15px;
+  font-size: 18px;
+  font-weight: 600;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.show-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.show-button {
+  padding: 12px 24px;
+  background-color: #f3f4f6;
+  color: #1f2937;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.show-button:hover {
+  background-color: #e5e7eb;
+}
+
+.show-button.active {
+  background-color: #3b82f6;
+  color: white;
+  border-color: #2563eb;
+}
+
+/* ==================== SEAT GRID ==================== */
+.seat-grid-container {
+  margin-top: 30px;
+  padding: 20px;
+}
+
+/* Screen */
+.screen-section {
+  text-align: center;
+  margin-bottom: 50px;
+  padding: 20px;
+}
+
+.screen-wrapper {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 15px;
+  background: linear-gradient(to bottom, rgba(59, 130, 246, 0.1), transparent);
+  border-radius: 50% 50% 0 0 / 20px 20px 0 0;
+  border: 3px solid rgba(59, 130, 246, 0.3);
+  border-bottom: none;
+}
+
+.screen-text {
+  color: #64748b;
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 3px;
+}
+
+/* Seats */
+.seats-wrapper {
   display: flex;
   flex-direction: column;
+  gap: 12px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.seat-row {
+  display: flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  gap: 12px;
+}
+
+.row-label {
+  width: 30px;
+  font-weight: bold;
+  color: #6b7280;
+  font-size: 14px;
+  text-align: center;
+}
+
+.row-spacer {
+  width: 30px;
+}
+
+.seats-container {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.seat-button {
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 11px;
+  transition: all 0.2s ease;
+  border: 2px solid;
+  position: relative;
+}
+
+.seat-button:disabled {
+  cursor: not-allowed;
+}
+
+/* Seat States */
+.seat-available {
+  background-color: #ffffff;
+  border-color: #d1d5db;
+  color: #6b7280;
+}
+
+.seat-available:hover:not(:disabled) {
+  transform: scale(1.08);
+  background-color: #f3f4f6;
+}
+
+.seat-selected {
+  background-color: #10b981;
+  border-color: #059669;
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.seat-locked,
+.seat-booked {
+  background-color: #9ca3af;
+  border-color: #6b7280;
+  color: #374151;
+  opacity: 0.6;
+}
+
+/* ==================== LEGEND ==================== */
+.legend-container {
+  margin-top: 50px;
+  padding: 25px;
+  background-color: #f9fafb;
+  border-radius: 12px;
+  max-width: 700px;
+  margin: 50px auto 0;
+  border: 1px solid #e5e7eb;
+}
+
+.legend-items {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.legend-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  border: 2px solid;
+}
+
+.legend-available {
+  background-color: #ffffff;
+  border-color: #d1d5db;
+}
+
+.legend-selected {
+  background-color: #10b981;
+  border-color: #059669;
+}
+
+.legend-sold {
+  background-color: #9ca3af;
+  border-color: #6b7280;
+  opacity: 0.6;
+}
+
+.legend-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+/* ==================== PROCEED SECTION ==================== */
+.proceed-section {
+  margin-top: 40px;
+  text-align: center;
+  padding: 25px;
+  background-color: #f9fafb;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+}
+
+.seats-count {
+  font-size: 20px;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 20px;
+}
+
+.proceed-button {
+  padding: 16px 40px;
+  background-color: #10b981;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 18px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+  transition: all 0.2s;
+}
+
+.proceed-button:hover {
+  background-color: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+/* ==================== BOOKING SUMMARY MODAL ==================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.booking-modal {
+  max-width: 550px;
+  width: 100%;
+  padding: 35px;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-title {
+  text-align: center;
+  color: #1f2937;
+  margin-bottom: 10px;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.modal-subtitle {
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 30px;
+}
+
+/* Selected Seats Box */
+.selected-seats-box {
+  padding: 20px;
+  background-color: #f9fafb;
+  border-radius: 12px;
+  margin-bottom: 25px;
+}
+
+.seats-heading {
+  color: #374151;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.seats-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.seat-badge {
+  background-color: #10b981;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* Pricing Details */
+.pricing-details {
+  border-top: 2px solid #e5e7eb;
+  padding-top: 20px;
+  margin-bottom: 25px;
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  color: #6b7280;
+}
+
+.price-value {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 2px solid #1f2937;
+  font-size: 20px;
+  font-weight: bold;
+  color: #1f2937;
+}
+
+.total-amount {
+  color: #10b981;
+}
+
+/* Modal Actions */
+.modal-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-confirm,
+.btn-cancel {
+  flex: 1;
+  padding: 16px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.btn-confirm {
+  background-color: #10b981;
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.btn-confirm:hover {
+  background-color: #059669;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.btn-cancel {
+  background-color: #6b7280;
+  color: white;
+}
+
+.btn-cancel:hover {
+  background-color: #4b5563;
+}
+
+.payment-note {
+  margin-top: 20px;
+  font-size: 12px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+/* ==================== RESPONSIVE DESIGN ==================== */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 20px;
   }
-  to {
-    transform: rotate(360deg);
+
+  .app-title {
+    font-size: 24px;
+  }
+
+  .show-button {
+    font-size: 12px;
+    padding: 10px 16px;
+  }
+
+  .seat-button {
+    width: 38px;
+    height: 38px;
+    font-size: 10px;
+  }
+
+  .legend-items {
+    gap: 20px;
+  }
+
+  .legend-box {
+    width: 30px;
+    height: 30px;
+  }
+
+  .booking-modal {
+    padding: 25px;
+  }
+
+  .modal-title {
+    font-size: 22px;
   }
 }
