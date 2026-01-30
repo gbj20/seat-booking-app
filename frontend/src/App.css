@@ -17,7 +17,7 @@ body {
 }
 
 .main-content {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   background-color: white;
   border-radius: 16px;
@@ -56,6 +56,18 @@ body {
   text-align: center;
   font-weight: 500;
   border: 2px solid;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .notification-success {
@@ -74,12 +86,6 @@ body {
   background-color: #fef3c7;
   border-color: #f59e0b;
   color: #92400e;
-}
-
-.notification-info {
-  background-color: #dbeafe;
-  border-color: #3b82f6;
-  color: #1e40af;
 }
 
 /* ==================== SHOW SELECTION ==================== */
@@ -124,7 +130,7 @@ body {
   border-color: #2563eb;
 }
 
-/* ==================== SEAT GRID ==================== */
+/* ==================== SEAT GRID - BOOKMYSHOW STYLE ==================== */
 .seat-grid-container {
   margin-top: 30px;
   padding: 20px;
@@ -133,12 +139,12 @@ body {
 /* Screen */
 .screen-section {
   text-align: center;
-  margin-bottom: 50px;
+  margin-bottom: 40px;
   padding: 20px;
 }
 
 .screen-wrapper {
-  max-width: 600px;
+  max-width: 500px;
   margin: 0 auto;
   padding: 15px;
   background: linear-gradient(to bottom, rgba(59, 130, 246, 0.1), transparent);
@@ -154,54 +160,81 @@ body {
   letter-spacing: 3px;
 }
 
-/* Seats */
+/* Section Groups */
 .seats-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  max-width: 900px;
+  gap: 30px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
+.section-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.section-header {
+  text-align: center;
+  padding: 8px;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.section-name {
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+/* Seat Rows */
 .seat-row {
   display: flex;
   align-items: center;
+  gap: 15px;
   justify-content: center;
-  gap: 12px;
+  margin-bottom: 8px;
 }
 
 .row-label {
   width: 30px;
   font-weight: bold;
   color: #6b7280;
-  font-size: 14px;
+  font-size: 16px;
   text-align: center;
-}
-
-.row-spacer {
-  width: 30px;
+  flex-shrink: 0;
 }
 
 .seats-container {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  align-items: center;
   justify-content: center;
+  flex-wrap: nowrap;
 }
 
+/* Gap between seat groups */
+.seat-gap {
+  flex-shrink: 0;
+}
+
+/* Seat Buttons */
 .seat-button {
-  width: 45px;
-  height: 45px;
+  width: 50px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
-  font-size: 11px;
+  font-size: 13px;
   transition: all 0.2s ease;
   border: 2px solid;
   position: relative;
+  flex-shrink: 0;
 }
 
 .seat-button:disabled {
@@ -216,8 +249,9 @@ body {
 }
 
 .seat-available:hover:not(:disabled) {
-  transform: scale(1.08);
+  transform: scale(1.1);
   background-color: #f3f4f6;
+  border-color: #10b981;
 }
 
 .seat-selected {
@@ -228,7 +262,13 @@ body {
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
-.seat-locked,
+.seat-locked {
+  background-color: #fecaca;
+  border-color: #ef4444;
+  color: #991b1b;
+  opacity: 0.7;
+}
+
 .seat-booked {
   background-color: #9ca3af;
   border-color: #6b7280;
@@ -236,14 +276,20 @@ body {
   opacity: 0.6;
 }
 
+.seat-default {
+  background-color: #e5e7eb;
+  border-color: #9ca3af;
+  color: #6b7280;
+}
+
 /* ==================== LEGEND ==================== */
 .legend-container {
-  margin-top: 50px;
-  padding: 25px;
+  margin-top: 40px;
+  padding: 20px;
   background-color: #f9fafb;
   border-radius: 12px;
-  max-width: 700px;
-  margin: 50px auto 0;
+  max-width: 600px;
+  margin: 40px auto 0;
   border: 1px solid #e5e7eb;
 }
 
@@ -292,41 +338,57 @@ body {
 
 /* ==================== PROCEED SECTION ==================== */
 .proceed-section {
-  margin-top: 40px;
-  text-align: center;
-  padding: 25px;
-  background-color: #f9fafb;
-  border-radius: 12px;
-  border: 2px solid #e5e7eb;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  animation: slideUpBottom 0.3s ease;
+  z-index: 100;
+}
+
+@keyframes slideUpBottom {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .seats-count {
   font-size: 20px;
   font-weight: bold;
-  color: #1f2937;
-  margin-bottom: 20px;
+  color: white;
 }
 
 .proceed-button {
-  padding: 16px 40px;
-  background-color: #10b981;
-  color: white;
+  padding: 16px 50px;
+  background-color: white;
+  color: #10b981;
   border: none;
   border-radius: 10px;
   font-size: 18px;
   cursor: pointer;
   font-weight: bold;
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
   transition: all 0.2s;
 }
 
 .proceed-button:hover {
-  background-color: #059669;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* ==================== BOOKING SUMMARY MODAL ==================== */
+/* ==================== BOOKING MODAL ==================== */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -339,6 +401,16 @@ body {
   justify-content: center;
   z-index: 1000;
   padding: 20px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .booking-modal {
@@ -348,6 +420,20 @@ body {
   background-color: white;
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlideUp 0.3s ease;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .modal-title {
@@ -365,18 +451,40 @@ body {
   margin-bottom: 30px;
 }
 
-/* Selected Seats Box */
+/* Show Details in Modal */
+.show-details-box {
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  margin-bottom: 20px;
+  text-align: center;
+  color: white;
+}
+
+.show-details-heading {
+  font-size: 20px;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.show-time {
+  font-size: 14px;
+  opacity: 0.95;
+}
+
 .selected-seats-box {
   padding: 20px;
   background-color: #f9fafb;
   border-radius: 12px;
   margin-bottom: 25px;
+  border: 2px solid #e5e7eb;
 }
 
 .seats-heading {
   color: #374151;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   font-size: 16px;
+  font-weight: 600;
 }
 
 .seats-badges {
@@ -388,24 +496,30 @@ body {
 .seat-badge {
   background-color: #10b981;
   color: white;
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: 6px;
   font-size: 14px;
   font-weight: bold;
 }
 
-/* Pricing Details */
 .pricing-details {
-  border-top: 2px solid #e5e7eb;
-  padding-top: 20px;
+  background-color: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
   margin-bottom: 25px;
 }
 
 .price-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #e5e7eb;
   color: #6b7280;
+}
+
+.price-row:last-of-type {
+  border-bottom: none;
 }
 
 .price-value {
@@ -421,17 +535,16 @@ body {
   border-top: 2px solid #1f2937;
   font-size: 20px;
   font-weight: bold;
-  color: #1f2937;
 }
 
 .total-amount {
   color: #10b981;
 }
 
-/* Modal Actions */
 .modal-actions {
   display: flex;
   gap: 12px;
+  margin-bottom: 15px;
 }
 
 .btn-confirm,
@@ -465,47 +578,72 @@ body {
 }
 
 .payment-note {
-  margin-top: 20px;
   font-size: 12px;
   color: #9ca3af;
   text-align: center;
+  font-style: italic;
 }
 
-/* ==================== RESPONSIVE DESIGN ==================== */
-@media (max-width: 768px) {
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 1024px) {
   .main-content {
     padding: 20px;
   }
 
+  .seat-button {
+    width: 45px;
+    height: 45px;
+    font-size: 12px;
+  }
+
+  .seats-container {
+    gap: 6px;
+  }
+}
+
+@media (max-width: 768px) {
   .app-title {
     font-size: 24px;
   }
 
-  .show-button {
-    font-size: 12px;
-    padding: 10px 16px;
+  .seat-button {
+    width: 40px;
+    height: 40px;
+    font-size: 11px;
   }
 
+  .seats-container {
+    gap: 5px;
+  }
+
+  .seat-row {
+    gap: 10px;
+  }
+
+  .proceed-section {
+    flex-direction: column;
+    padding: 15px;
+    gap: 10px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
   .seat-button {
-    width: 38px;
-    height: 38px;
+    width: 35px;
+    height: 35px;
     font-size: 10px;
   }
 
-  .legend-items {
-    gap: 20px;
+  .seats-container {
+    gap: 4px;
   }
 
-  .legend-box {
-    width: 30px;
-    height: 30px;
-  }
-
-  .booking-modal {
-    padding: 25px;
-  }
-
-  .modal-title {
-    font-size: 22px;
+  .row-label {
+    font-size: 14px;
+    width: 25px;
   }
 }

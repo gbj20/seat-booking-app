@@ -175,6 +175,238 @@ app.post('/api/unlock-seat', async (req, res) => {
   res.json({ success: true });
 });
 
+// ==================== NEW ENDPOINTS FOR BOOKING FLOW ====================
+
+// Get booking summary
+app.post('/api/booking-summary', async (req, res) => {
+  try {
+    const { seatIds } = req.body;
+
+    if (!seatIds || !Array.isArray(seatIds) || seatIds.length === 0) {
+      return res.status(400).json({ error: 'Invalid seat selection' });
+    }
+
+    // Verify all seats are still locked and get their details
+    const seats = await pool.query(
+      `SELECT s.*, sh.show_name, sh.show_time 
+       FROM seats s
+       JOIN shows sh ON s.show_id = sh.show_id
+       WHERE s.seat_id = ANY($1)`,
+      [seatIds]
+    );
+
+    if (seats.rows.length !== seatIds.length) {
+      return res.status(400).json({ error: 'Some seats are no longer available' });
+    }
+
+    // Calculate pricing based on ACTUAL seat prices
+    const seatCount = seatIds.length;
+    const subtotal = seats.rows.reduce((sum, seat) => sum + parseFloat(seat.price), 0);
+    const tax = (subtotal * TAX_PERCENT) / 100;
+    const convenienceFee = CONVENIENCE_FEE * seatCount;
+    const totalAmount = subtotal + tax + convenienceFee;
+
+    // Get show details (all seats belong to same show)
+    const showDetails = {
+      show_name: seats.rows[0].show_name,
+      show_time: seats.rows[0].show_time
+    };
+
+    res.json({
+      seatCount,
+      subtotal,
+      tax,
+      taxPercent: TAX_PERCENT,
+      convenienceFee,
+      totalAmount,
+      seats: seats.rows,
+      showDetails
+    });
+  } catch (err) {
+    console.error('Error generating booking summary:', err);
+    res.status(500).json({ error: 'Failed to generate booking summary' });
+  }
+});
+
+// Confirm booking (simulate payment and book seats)
+app.post('/api/book-seats', async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const { seatIds, userId, paymentSuccess } = req.body;
+
+    if (!seatIds || !Array.isArray(seatIds) || seatIds.length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid seat selection' 
+      });
+    }
+
+    if (!paymentSuccess) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Payment was not successful' 
+      });
+    }
+
+    await client.query('BEGIN');
+
+    // Verify all seats are locked by this user and get their prices
+    const seatCheck = await client.query(
+      `SELECT * FROM seats 
+       WHERE seat_id = ANY($1) 
+       AND locked_by = $2 
+       AND status = 'LOCKED'
+       FOR UPDATE`,
+      [seatIds, userId]
+    );
+
+    if (seatCheck.rows.length !== seatIds.length) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Some seats are no longer locked by you' 
+      });
+    }
+
+    // Calculate pricing based on ACTUAL seat prices
+    const seatCount = seatIds.length;
+    const subtotal = seatCheck.rows.reduce((sum, seat) => sum + parseFloat(seat.price), 0);
+    const tax = (subtotal * TAX_PERCENT) / 100;
+    const convenienceFee = CONVENIENCE_FEE * seatCount;
+    const totalAmount = subtotal + tax + convenienceFee;
+
+    // Book the seats (mark as BOOKED)
+    const bookedSeats = await client.query(
+      `UPDATE seats 
+       SET status = 'BOOKED', 
+           locked_by = NULL, 
+           lock_expiry = NULL,
+           booked_by = $2,
+           booked_at = NOW()
+       WHERE seat_id = ANY($1)
+       RETURNING *`,
+      [seatIds, userId]
+    );
+
+    // Get show_id and seat numbers
+    const showId = bookedSeats.rows[0].show_id;
+    const seatNumbers = bookedSeats.rows.map(s => s.seat_number);
+
+    // Insert booking record into bookings table
+    const bookingResult = await client.query(
+      `INSERT INTO bookings (
+        user_id, 
+        show_id, 
+        seat_ids, 
+        seat_numbers,
+        total_amount, 
+        payment_status, 
+        ticket_price, 
+        tax_amount, 
+        convenience_fee
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING booking_id, booking_time`,
+      [
+        userId, 
+        showId, 
+        seatIds, 
+        seatNumbers,
+        totalAmount, 
+        'SUCCESS', 
+        subtotal,  // Store the actual seat prices total
+        tax, 
+        convenienceFee
+      ]
+    );
+
+    await client.query('COMMIT');
+
+    // Remove from Redis
+    for (const seatId of seatIds) {
+      await redisClient.del(`seat_lock:${seatId}`);
+    }
+
+    // Notify all clients that these seats are now booked
+    io.to(`show-${showId}`).emit('seats-booked', { 
+      seatIds, 
+      userId,
+      seats: bookedSeats.rows 
+    });
+
+    console.log(`✅ Booking created: ID ${bookingResult.rows[0].booking_id} for user ${userId} - Total: ₹${totalAmount.toFixed(2)}`);
+    
+    res.json({ 
+      success: true, 
+      message: `Successfully booked seats: ${seatNumbers.join(', ')}`,
+      bookingId: bookingResult.rows[0].booking_id,
+      bookingTime: bookingResult.rows[0].booking_time,
+      totalAmount: totalAmount,
+      bookedSeats: bookedSeats.rows
+    });
+
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Error booking seats:', err);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to complete booking' 
+    });
+  } finally {
+    client.release();
+  }
+});
+
+// Get all bookings (admin view)
+app.get('/api/bookings', async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT 
+        b.booking_id,
+        b.user_id,
+        b.total_amount,
+        b.payment_status,
+        b.booking_time,
+        b.seat_numbers,
+        s.show_name,
+        s.show_time
+       FROM bookings b
+       JOIN shows s ON b.show_id = s.show_id
+       ORDER BY b.booking_time DESC`
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching bookings:', err);
+    res.status(500).json({ error: 'Failed to fetch bookings' });
+  }
+});
+
+// Get bookings by user
+app.get('/api/bookings/user/:userId', async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT 
+        b.booking_id,
+        b.total_amount,
+        b.payment_status,
+        b.booking_time,
+        b.seat_numbers,
+        s.show_name,
+        s.show_time
+       FROM bookings b
+       JOIN shows s ON b.show_id = s.show_id
+       WHERE b.user_id = $1
+       ORDER BY b.booking_time DESC`,
+      [req.params.userId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching user bookings:', err);
+    res.status(500).json({ error: 'Failed to fetch user bookings' });
+  }
+});
+
 // ==================== HELPER FUNCTIONS ====================
 
 // Unlock all seats for a user after disconnect
@@ -396,3 +628,4 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
